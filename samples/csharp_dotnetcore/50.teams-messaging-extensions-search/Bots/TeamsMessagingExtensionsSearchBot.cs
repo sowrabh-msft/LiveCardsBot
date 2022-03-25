@@ -31,7 +31,13 @@ namespace Microsoft.BotBuilderSamples.Bots
             var paths = new[] { ".", "Resources", "githubCard1.json" };
             string filepath = Path.Combine(paths);
             var adaptiveCardAttachment = await FetchAdaptive(filepath);
-            var attachments = new MessagingExtensionAttachment(AdaptiveCard.ContentType, null, adaptiveCardAttachment.Content);
+            var heroCard = new ThumbnailCard
+            {
+                Title = "Github",
+                Text = query.Url,
+            };
+
+            var attachments = new MessagingExtensionAttachment(AdaptiveCard.ContentType, null, adaptiveCardAttachment.Content, null, null, heroCard.ToAttachment());
             var result = new MessagingExtensionResult("list", "result", new[] { attachments });
 
             return new MessagingExtensionResponse(result);
