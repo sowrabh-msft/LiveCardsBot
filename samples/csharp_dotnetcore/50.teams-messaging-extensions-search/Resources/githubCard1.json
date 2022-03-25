@@ -1,0 +1,58 @@
+﻿{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "Container",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "In Progress",
+          "size": "Default",
+          "wrap": true
+        },
+        {
+          "type": "TextBlock",
+          "text": "Enabling ME-Cards to use Fluid Framework",
+          "wrap": true,
+          "fontType": "Default",
+          "size": "Large",
+          "weight": "Bolder"
+        }
+      ],
+      "style": "default",
+      "bleed": true
+    },
+    {
+      "type": "FactSet",
+      "id": "b8a4817f-3161-fa49-7fe2-8c086a64f716",
+      "facts": [
+        {
+          "title": "Created by",
+          "value": "Sneh Sajal"
+        },
+        {
+          "title": "Date of creation",
+          "value": "22/03/2022"
+        },
+        {
+          "title": "Project",
+          "value": "Teams"
+        },
+        {
+          "title": "Assigned to",
+          "value": "Sowrabh, Aditya"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.OpenUrl",
+      "title": "Approve",
+      "url": "https://domoreexp.visualstudio.com/DefaultCollection/Teamspace/_git/teams-modular-packages/pullrequest/489553"
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.4",
+  "padding": "Default"
+}

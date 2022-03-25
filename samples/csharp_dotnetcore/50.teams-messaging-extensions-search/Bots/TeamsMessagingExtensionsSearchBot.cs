@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using AdaptiveCards;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -25,6 +26,17 @@ namespace Microsoft.BotBuilderSamples.Bots
             this._baseUrl = configuration["BaseUrl"];
         }
 
+        protected override async Task<MessagingExtensionResponse> OnTeamsAppBasedLinkQueryAsync(ITurnContext<IInvokeActivity> turnContext, AppBasedLinkQuery query, CancellationToken cancellationToken)
+        {
+            var paths = new[] { ".", "Resources", "githubCard1.json" };
+            string filepath = Path.Combine(paths);
+            var adaptiveCardAttachment = await FetchAdaptive(filepath);
+            var attachments = new MessagingExtensionAttachment(AdaptiveCard.ContentType, null, adaptiveCardAttachment.Content);
+            var result = new MessagingExtensionResult("list", "result", new[] { attachments });
+
+            return new MessagingExtensionResponse(result);
+        }
+
         protected override async Task<MessagingExtensionResponse> OnTeamsMessagingExtensionQueryAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionQuery query, CancellationToken cancellationToken)
         {
             var text = query?.Parameters?[0]?.Value as string ?? string.Empty;
@@ -32,7 +44,7 @@ namespace Microsoft.BotBuilderSamples.Bots
             switch (text)
             {
                 case "adaptive card":
-                    MessagingExtensionResponse response = GetAdaptiveCard();
+                    MessagingExtensionResponse response = await GetAdaptiveCard();
                     return response;
 
                 case "connector card":
@@ -125,7 +137,7 @@ namespace Microsoft.BotBuilderSamples.Bots
             return obj["data"].Select(item => (item["id"].ToString(), item["version"].ToString(), item["description"].ToString(), item["projectUrl"]?.ToString(), item["iconUrl"]?.ToString()));
         }
 
-        public MessagingExtensionResponse GetAdaptiveCard()
+        public async Task<MessagingExtensionResponse> GetAdaptiveCard()
         {
             var paths = new[] { ".", "Resources", "RestaurantCard.json" };
             string filepath = Path.Combine(paths); 
@@ -134,7 +146,8 @@ namespace Microsoft.BotBuilderSamples.Bots
                 Title = "Adaptive Card",
                 Text = "Please select to get Adaptive card"
             };
-            var adaptiveList = FetchAdaptive(filepath);
+            var adaptiveList = await FetchAdaptive(filepath);
+
             var attachment = new MessagingExtensionAttachment
             {
                 ContentType = "application/vnd.microsoft.card.adaptive",
@@ -181,13 +194,16 @@ namespace Microsoft.BotBuilderSamples.Bots
             };
         }
 
-        public  Attachment FetchAdaptive(string filepath)
+        public  async Task<Attachment> FetchAdaptive(string filepath)
         {
             var adaptiveCardJson = File.ReadAllText(filepath);
+            AdaptiveCard adaptiveCard = JsonConvert.DeserializeObject<AdaptiveCard>(adaptiveCardJson);
+            string fluidContainerId = await CreateFluidContainer(adaptiveCard);
+            adaptiveCard.FallbackText = fluidContainerId;
             var adaptiveCardAttachment = new Attachment
             {
                 ContentType = "application/vnd.microsoft.card.adaptive",
-                Content = JsonConvert.DeserializeObject(adaptiveCardJson)
+                Content = adaptiveCard
             };      
             return adaptiveCardAttachment;
         }
@@ -232,6 +248,28 @@ namespace Microsoft.BotBuilderSamples.Bots
                     Attachments = attachments
                 }
             };
+        }
+
+        private async static Task<string> CreateFluidContainer(object adaptiveCard)
+        {
+            string timeStamp = System.DateTime.Now.ToString("yyyyMMddHHmmssffff");
+            var payload = new
+            {
+                card = adaptiveCard,
+                version = timeStamp
+            };
+            string requestAsString = JsonConvert.SerializeObject(payload);
+            string requestUri = $"https://a17f-2404-f801-8028-3-89f5-3ce6-cf67-c93f.ngrok.io/createCard";
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+
+            request.Content = new StringContent(requestAsString, System.Text.Encoding.UTF8, "application/json");
+
+            HttpClient httpClient = new HttpClient();
+            HttpResponseMessage response = await httpClient.SendAsync(request);
+            var payloadAsString = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<ResourceResponse>(payloadAsString);
+            return result.Id;
+
         }
     }
 }

@@ -2,7 +2,7 @@
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.5/MicrosoftTeams.schema.json",
   "manifestVersion": "1.5",
   "version": "1.0",
-  "id": "<<YOUR-MICROSOFT-APP-ID>>",
+  "id": "ebf7d952-fcc5-4a55-9c7c-aad9016c65e7",
   "packageName": "com.microsoft.teams.samples.searchExtension",
   "developer": {
     "name": "Microsoft Corp",
@@ -11,7 +11,7 @@
     "termsOfUseUrl": "https://example.azurewebsites.net/termsofuse"
   },
   "name": {
-    "short": "search-extension-settings",
+    "short": "Github Notifications App",
     "full": "Microsoft Teams V4 Search Messaging Extension Bot and settings"
   },
   "description": {
@@ -25,7 +25,7 @@
   "accentColor": "#abcdef",
   "composeExtensions": [
     {
-      "botId": "<<YOUR-MICROSOFT-APP-ID>>",
+      "botId": "ebf7d952-fcc5-4a55-9c7c-aad9016c65e7",
       "canUpdateConfiguration": true,
       "commands": [
         {
@@ -35,22 +35,33 @@
             "commandBox"
           ],
           "description": "Test command to run query",
-          "title": "Search",
+          "title": "Search this App",
           "type": "query",
           "initialRun": true,
           "parameters": [
             {
               "name": "searchQuery",
-              "title": "Search Query",
+              "title": "Search your query",
               "description": "Your search query",
               "inputType": "text"
             }
           ]
         }
+      ],
+      "messageHandlers": [
+        {
+          "type": "link",
+          "value": {
+            "domains": [
+              "*.visualstudio.com"
+            ]
+          }
+        }
       ]
     }
   ],
   "validDomains": [
-    "<<YOUR-BASE-URL-DOMAIN>>"
+    "token.botframework.com",
+    "*.ngrok.io"
   ]
 }
