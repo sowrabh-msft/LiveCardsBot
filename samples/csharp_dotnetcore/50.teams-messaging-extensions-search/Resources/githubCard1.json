@@ -6,7 +6,7 @@
       "items": [
         {
           "type": "TextBlock",
-          "text": "In Progress",
+          "text": "Active",
           "size": "Default",
           "wrap": true
         },
