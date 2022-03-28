@@ -352,14 +352,17 @@ namespace Microsoft.BotBuilderSamples.Bots
             string id = result["id"].ToString();
             //"890313670"
             string state = result["state"].ToString();
+            string color = "warning";
             if (state == "open")
             {
                 state = "OPEN";
+                color = "warning";
             }
 
             if (state == "closed")
             {
                 state = "CLOSED";
+                color = "good";
             }
             //"open"
             string title = result["title"].ToString();
@@ -385,7 +388,8 @@ namespace Microsoft.BotBuilderSamples.Bots
                 Title = title,
                 Url = url,
                 Creator = creator,
-                Reviewer = reviewer
+                Reviewer = reviewer,
+                Color = color
             };
 
             string cardJson = template.Expand(myData);
