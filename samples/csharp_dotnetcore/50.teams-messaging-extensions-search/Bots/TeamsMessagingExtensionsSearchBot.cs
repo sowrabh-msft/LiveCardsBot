@@ -312,7 +312,7 @@ namespace Microsoft.BotBuilderSamples.Bots
                 Reviewer = reviewer
             };
 
-            string cardJson = template.Expand(myData);
+            string cardJson = template.Expand(myData); ;
 
             AdaptiveCard adaptiveCard = AdaptiveCard.FromJson(cardJson).Card;
             string fluidContainerId;
