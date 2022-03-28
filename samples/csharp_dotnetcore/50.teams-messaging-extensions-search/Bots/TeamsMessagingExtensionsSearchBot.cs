@@ -280,26 +280,62 @@ namespace Microsoft.BotBuilderSamples.Bots
 
         }
 
-        public async static Task<string> UpdateFluidContainer(object adaptiveCard)
+        public async static void UpdateFluidContainer(JToken result)
         {
+            string id = result["id"].ToString();
+            //"890313670"
+            string state = "CLOSED"; ;
+            
+            //"open"
+            string title = result["title"].ToString();
+            //"Pull request card changes for github app"
+            string url = result["html_url"].ToString();
+            //"https://github.com/sowrabh-msft/LiveCardsBot/pull/1"
+            string creator = result["user"]["login"].ToString();
+            //"baton17"
+            string reviewer = "No reviewers";
+            if (result["requested_reviewers"] != null && result["requested_reviewers"].HasValues)
+            {
+                reviewer = result["requested_reviewers"][0]["login"].ToString();
+            }
+
+            JObject templateJson = JObject.Parse(File.ReadAllText(@".\Resources\githubCard2.json"));
+
+            AdaptiveCardTemplate template = new AdaptiveCardTemplate(templateJson);
+            var myData = new
+            {
+                Id = id,
+                State = state,
+                Title = title,
+                Url = url,
+                Creator = creator,
+                Reviewer = reviewer
+            };
+
+            string cardJson = template.Expand(myData);
+
+            AdaptiveCard adaptiveCard = AdaptiveCard.FromJson(cardJson).Card;
+            string fluidContainerId;
+            pRToFluid.TryGetValue(id, out fluidContainerId);
+            adaptiveCard.FallbackText = fluidContainerId;
             string timeStamp = System.DateTime.Now.ToString("yyyyMMddHHmmssffff");
             var payload = new
             {
-                card = adaptiveCard,
-                version = timeStamp
+                container = fluidContainerId,
+                cardData = new
+                {
+                    card = adaptiveCard,
+                    version = timeStamp
+                }
             };
             string requestAsString = JsonConvert.SerializeObject(payload);
-            string requestUri = $"https://a17f-2404-f801-8028-3-89f5-3ce6-cf67-c93f.ngrok.io/updateCard";
+            string requestUri = $"https://f6d2-2404-f801-8028-1-c827-f896-7274-22ce.ngrok.io/updateCard";
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, requestUri);
 
             request.Content = new StringContent(requestAsString, System.Text.Encoding.UTF8, "application/json");
 
             HttpClient httpClient = new HttpClient();
-            HttpResponseMessage response = await httpClient.SendAsync(request);
-            var payloadAsString = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<ResourceResponse>(payloadAsString);
-            return result.Id;
-
+            await httpClient.SendAsync(request);
         }
 
         private async static Task<object> GetGitHubPRCard(string pId)
