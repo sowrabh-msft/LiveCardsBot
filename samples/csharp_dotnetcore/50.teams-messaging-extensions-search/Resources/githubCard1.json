@@ -9,7 +9,7 @@
           "text": "${state}",
           "size": "Large",
           "weight": "Bolder",
-          "color": "good",
+          "color": "${color}",
           "wrap": true
         },
         {
