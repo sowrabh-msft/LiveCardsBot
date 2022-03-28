@@ -1,0 +1,49 @@
+﻿{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "Container",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "${state}",
+          "size": "Large",
+          "weight": "Bolder",
+          "color": "good",
+          "wrap": true
+        },
+        {
+          "type": "TextBlock",
+          "text": "${title}",
+          "wrap": true,
+          "fontType": "Default",
+          "size": "Large",
+          "weight": "Bolder"
+        }
+      ],
+      "style": "default",
+      "bleed": true
+    },
+    {
+      "type": "FactSet",
+      "id": "b8a4817f-3161-fa49-7fe2-8c086a64f716",
+      "facts": [
+        {
+          "title": "Created by",
+          "value": "${creator}"
+        },
+        {
+          "title": "PR Id",
+          "value": "${id}"
+        },
+        {
+          "title": "Assigned to",
+          "value": "${reviewer}"
+        }
+      ]
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.4",
+  "padding": "Default"
+}
