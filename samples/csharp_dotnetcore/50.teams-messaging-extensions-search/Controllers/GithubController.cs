@@ -17,10 +17,13 @@ namespace TeamsMessagingExtensionsSearch.Controllers
         public async Task<IActionResult> PostEvents([FromBody] object data)
         {
             JObject payload = JObject.FromObject(data);
-            string action = payload["action"].ToString();
-            if (action == "closed" && payload["pull_request"] != null)
+            if (payload["action"] != null)
             {
-                TeamsMessagingExtensionsSearchBot.UpdateFluidContainer(payload["pull_request"]);
+                string action = payload["action"].ToString();
+                if (action == "closed" && payload["pull_request"] != null)
+                {
+                    TeamsMessagingExtensionsSearchBot.UpdateFluidContainer(payload["pull_request"]);
+                }
             }
 
             return Ok();
