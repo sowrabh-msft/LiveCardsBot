@@ -318,7 +318,7 @@ namespace Microsoft.BotBuilderSamples.Bots
             string fluidContainerId;
             pRToFluid.TryGetValue(id, out fluidContainerId);
             adaptiveCard.FallbackText = fluidContainerId;
-            string timeStamp = System.DateTime.Now.ToString("yyyyMMddHHmmssffff");
+            string timeStamp = System.DateTime.Now.ToString("yyyyMMddHHmmssffff"); ;
             var payload = new
             {
                 container = fluidContainerId,
