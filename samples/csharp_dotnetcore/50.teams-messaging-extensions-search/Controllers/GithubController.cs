@@ -15,5 +15,6 @@ namespace TeamsMessagingExtensionsSearch.Controllers
         {
             return Ok();
         }
+
     }
 }
