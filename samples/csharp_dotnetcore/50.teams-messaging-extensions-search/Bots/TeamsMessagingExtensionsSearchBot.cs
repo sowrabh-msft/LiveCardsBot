@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
+using AdaptiveCards;
+using AdaptiveCards.Templating;
 using System.Collections.Generic;
 using System.IO;
-using AdaptiveCards;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -21,6 +21,7 @@ namespace Microsoft.BotBuilderSamples.Bots
      public class TeamsMessagingExtensionsSearchBot : TeamsActivityHandler
     {
         public readonly string _baseUrl;
+        public static Dictionary<string, string> pRToFluid = new Dictionary<string, string>();
         public TeamsMessagingExtensionsSearchBot(IConfiguration configuration):base()
         {
             this._baseUrl = configuration["BaseUrl"];
@@ -30,14 +31,15 @@ namespace Microsoft.BotBuilderSamples.Bots
         {
             var paths = new[] { ".", "Resources", "githubCard1.json" };
             string filepath = Path.Combine(paths);
-            var adaptiveCardAttachment = await FetchAdaptive(filepath);
+            string pullRequestId = query.Url.Split('/')[query.Url.Split('/').Length - 1];
+            object cardToSend = await GetGitHubPRCard(pullRequestId);
             var heroCard = new ThumbnailCard
             {
                 Title = "Github",
                 Text = query.Url,
             };
 
-            var attachments = new MessagingExtensionAttachment(AdaptiveCard.ContentType, null, adaptiveCardAttachment.Content, null, null, heroCard.ToAttachment());
+            var attachments = new MessagingExtensionAttachment(AdaptiveCard.ContentType, null, cardToSend, null, null, heroCard.ToAttachment());
             var result = new MessagingExtensionResult("list", "result", new[] { attachments });
 
             return new MessagingExtensionResponse(result);
@@ -265,7 +267,7 @@ namespace Microsoft.BotBuilderSamples.Bots
                 version = timeStamp
             };
             string requestAsString = JsonConvert.SerializeObject(payload);
-            string requestUri = $"https://a17f-2404-f801-8028-3-89f5-3ce6-cf67-c93f.ngrok.io/createCard";
+            string requestUri = $"https://f6d2-2404-f801-8028-1-c827-f896-7274-22ce.ngrok.io/createCard";
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, requestUri);
 
             request.Content = new StringContent(requestAsString, System.Text.Encoding.UTF8, "application/json");
@@ -276,6 +278,87 @@ namespace Microsoft.BotBuilderSamples.Bots
             var result = JsonConvert.DeserializeObject<ResourceResponse>(payloadAsString);
             return result.Id;
 
+        }
+
+        public async static Task<string> UpdateFluidContainer(object adaptiveCard)
+        {
+            string timeStamp = System.DateTime.Now.ToString("yyyyMMddHHmmssffff");
+            var payload = new
+            {
+                card = adaptiveCard,
+                version = timeStamp
+            };
+            string requestAsString = JsonConvert.SerializeObject(payload);
+            string requestUri = $"https://a17f-2404-f801-8028-3-89f5-3ce6-cf67-c93f.ngrok.io/updateCard";
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, requestUri);
+
+            request.Content = new StringContent(requestAsString, System.Text.Encoding.UTF8, "application/json");
+
+            HttpClient httpClient = new HttpClient();
+            HttpResponseMessage response = await httpClient.SendAsync(request);
+            var payloadAsString = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<ResourceResponse>(payloadAsString);
+            return result.Id;
+
+        }
+
+        private async static Task<object> GetGitHubPRCard(string pId)
+        {
+            string requestUri = $"https://api.github.com/repos/sowrabh-msft/LiveCardsBot/pulls/{pId}";
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+            request.Headers.TryAddWithoutValidation("Accept", "application/vnd.github.v3+json");
+            request.Headers.TryAddWithoutValidation("User-Agent", "githubApp");
+            HttpClient httpClient = new HttpClient();
+            HttpResponseMessage response = await httpClient.SendAsync(request);
+            var payloadAsString = await response.Content.ReadAsStringAsync();
+            var result = JObject.Parse(payloadAsString);
+            
+            string id = result["id"].ToString();
+            //"890313670"
+            string state = result["state"].ToString();
+            if (state == "open")
+            {
+                state = "OPEN";
+            }
+
+            if (state == "closed")
+            {
+                state = "CLOSED";
+            }
+            //"open"
+            string title = result["title"].ToString();
+            //"Pull request card changes for github app"
+            string url = result["html_url"].ToString();
+            //"https://github.com/sowrabh-msft/LiveCardsBot/pull/1"
+            string creator = result["user"]["login"].ToString();
+            //"baton17"
+            string reviewer = "No reviewers";
+            if (result["requested_reviewers"] != null && result["requested_reviewers"].HasValues)
+            {
+                reviewer = result["requested_reviewers"][0]["login"].ToString();
+            }
+       
+
+            JObject templateJson = JObject.Parse(File.ReadAllText(@".\Resources\githubCard1.json"));
+
+            AdaptiveCardTemplate template = new AdaptiveCardTemplate(templateJson);
+            var myData = new
+            {
+                Id = id,
+                State = state,
+                Title = title,
+                Url = url,
+                Creator = creator,
+                Reviewer = reviewer
+            };
+
+            string cardJson = template.Expand(myData);
+
+            AdaptiveCard adaptiveCard = AdaptiveCard.FromJson(cardJson).Card;
+            string fluidContainerId = await CreateFluidContainer(adaptiveCard);
+            pRToFluid.Add(id, fluidContainerId);
+            adaptiveCard.FallbackText = fluidContainerId;
+            return adaptiveCard;
         }
     }
 }
