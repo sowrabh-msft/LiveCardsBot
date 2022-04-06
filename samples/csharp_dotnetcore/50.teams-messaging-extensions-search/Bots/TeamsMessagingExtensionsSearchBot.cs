@@ -396,7 +396,10 @@ namespace Microsoft.BotBuilderSamples.Bots
 
             AdaptiveCard adaptiveCard = AdaptiveCard.FromJson(cardJson).Card;
             string fluidContainerId = await CreateFluidContainer(adaptiveCard);
-            pRToFluid.Add(id, fluidContainerId);
+            if (!pRToFluid.ContainsKey(id))
+            {
+                pRToFluid.Add(id, fluidContainerId);
+            }
             adaptiveCard.FallbackText = fluidContainerId;
             return adaptiveCard;
         }
