@@ -16,7 +16,7 @@ build a Search-based Messaging Extension.
 > Note these instructions are for running the sample on your local machine, the tunnelling solution is required because
 the Teams service needs to call into the bot.
 
-1) Clone the repository
+1) Clone the repository locally
 
     ```bash
     git clone https://github.com/Microsoft/botbuilder-samples.git
