@@ -1,8 +1,8 @@
 {
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.5/MicrosoftTeams.schema.json",
   "manifestVersion": "1.5",
-  "version": "1.0.0",
-  "id": "<<YOUR-MICROSOFT-APP-ID>>",
+  "version": "1.0.1",
+  "id": "ecc9fe9e-03df-4597-9c7d-22828d713d68",
   "packageName": "com.microsoft.teams.samples",
   "developer": {
     "name": "Microsoft",
@@ -15,30 +15,36 @@
     "outline": "icon-outline.png"
   },
   "name": {
-    "short": "Team Auth Module",
-    "full": "Simple Team Auth Module"
+    "short": "Teams SSO Auth (snsajal)",
+    "full": "Teams Single Sign On Sample (snsajal)"
   },
   "description": {
-    "short": "Test Team Auth Module Scenario",
-    "full": "Simple Team Auth Module Scenario Test"
+    "short": "Test Teams SSO Auth",
+    "full": "This is a bot for testing Single Sign on for Teams"
   },
   "accentColor": "#FFFFFF",
   "bots": [
     {
-      "botId": "<<YOUR-MICROSOFT-APP-ID>>",
+      "botId": "15d5d6d8-1ce8-4729-8f34-1d388b529dfa",
       "scopes": [
-        "personal"
+        "team",
+        "personal",
+        "groupchat"
       ],
       "supportsFiles": false,
       "isNotificationOnly": false
     }
   ],
+  "webApplicationInfo": {
+    "id": "3dd63671-eeeb-42b4-b033-bd64ce2a0a72",
+    "resource": "api://botid-15d5d6d8-1ce8-4729-8f34-1d388b529dfa"
+  },
   "permissions": [
     "identity",
     "messageTeamMembers"
   ],
   "validDomains": [
     "token.botframework.com",
-    "*.ngrok.io"
+    "ngrok.io"
   ]
 }
