@@ -56,7 +56,7 @@ namespace Microsoft.BotBuilderSamples
 
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
-            if (turnContext.Activity.Text == "ACv2")
+            if (turnContext.Activity.Text.Contains("ACv2"))
             {
                 string[] path = { ".", "Resources", "initialCard.json" };
                 var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
