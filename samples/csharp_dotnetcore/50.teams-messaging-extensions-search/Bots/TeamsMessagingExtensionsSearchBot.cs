@@ -284,7 +284,7 @@ namespace Microsoft.BotBuilderSamples.Bots
         {
             string id = result["id"].ToString();
             //"890313670"
-            string state = "CLOSED"; ;
+            string state = "CLOSED"; ; ;
             
             //"open"
             string title = result["title"].ToString();
