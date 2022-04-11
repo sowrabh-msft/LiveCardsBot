@@ -64,6 +64,13 @@ namespace Microsoft.BotBuilderSamples
                 var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, turnContext.Activity.From.Name, member.Id);
                 await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
             }
+            else if (turnContext.Activity.Text.Contains("Loop"))
+            {
+                string[] path = { ".", "Resources", "initialCardWithLoopTestButtons.json" };
+                var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
+                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, turnContext.Activity.From.Name, member.Id);
+                await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
+            }
             else
             {
                 // Run the Dialog with the new message Activity.
@@ -135,7 +142,7 @@ namespace Microsoft.BotBuilderSamples
                         case "initiateOAuth":
                             return await initiateOAuthAsync(turnContext, cancellationToken);
                         case "RefreshBasicCard":
-                            return createMessageResponseAsync();
+                            return await initiateSSOAsync(turnContext, cancellationToken);
                     }
                 }
                 // authToken or state is present. Verify token/state in invoke payload and return AC response

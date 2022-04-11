@@ -10,6 +10,20 @@
       }
     }
   },
+  "authentication": {
+    "text": "Signin Text",
+    "connectionName": "newConnection",
+    "tokenExchangeResource": {
+      "id": "4d62a393-8b7d-4541-8f45-912158e74dd1"
+    },
+    "buttons": [
+      {
+        "type": "openUrl",
+        "title": "Bot Service OAuth",
+        "value": "https://token.botframework.com/api/oauth/signin?signin=8a01e4a87ab046d7ac1e4ba87ed16519"
+      }
+    ]
+  },
   "body": [
     {
       "type": "TextBlock",
@@ -19,7 +33,7 @@
     },
     {
       "type": "TextBlock",
-      "text": "Alex",
+      "text": "${createdBy}",
       "size": "Medium",
       "weight": "Bolder"
     },
@@ -31,7 +45,7 @@
           "verb": "initiateSSO",
           "title": "CheckForSSO",
           "data": {
-            "CreatedBy": "Alex"
+            "CreatedBy": "${createdBy}"
           }
         },
         {
@@ -39,22 +53,26 @@
           "verb": "initiateOAuth",
           "title": "CheckForOAuth",
           "data": {
-            "CreatedBy": "Alex"
+            "CreatedBy": "${createdBy}"
+          }
+        },
+        {
+          "type": "Action.Execute",
+          "verb": "loopSSO",
+          "title": "LoopingSSO",
+          "data": {
+            "CreatedBy": "${createdBy}"
+          }
+        },
+        {
+          "type": "Action.Execute",
+          "verb": "loopOAuth",
+          "title": "LoopingOAuth",
+          "data": {
+            "CreatedBy": "${createdBy}"
           }
         }
       ]
-    },
-    {
-      "type": "TextBlock",
-      "text": "Last Authentication Result:",
-      "size": "Medium",
-      "weight": "Bolder"
-    },
-    {
-      "type": "TextBlock",
-      "text": "${authResult}",
-      "size": "Medium",
-      "weight": "Bolder"
     }
   ],
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",

@@ -55,22 +55,6 @@
           "data": {
             "CreatedBy": "${createdBy}"
           }
-        },
-        {
-          "type": "Action.Execute",
-          "verb": "loopSSO",
-          "title": "LoopingSSO",
-          "data": {
-            "CreatedBy": "${createdBy}"
-          }
-        },
-        {
-          "type": "Action.Execute",
-          "verb": "loopOAuth",
-          "title": "LoopingOAuth",
-          "data": {
-            "CreatedBy": "${createdBy}"
-          }
         }
       ]
     }
