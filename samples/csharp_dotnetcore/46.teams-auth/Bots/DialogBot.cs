@@ -96,8 +96,19 @@ namespace Microsoft.BotBuilderSamples
                     return null;
 
                 JObject actiondata = JsonConvert.DeserializeObject<JObject>(value["action"].ToString());
-                JObject authentication = JsonConvert.DeserializeObject<JObject>(value["authentication"].ToString());
-                string state = value["state"].ToString();
+
+
+                JObject authentication = null;
+
+                if (value["authentication"] != null) {
+                    authentication = JsonConvert.DeserializeObject<JObject>(value["authentication"].ToString());
+                }
+
+                string state = null;
+
+                if (value["state"] != null) {
+                    state = value["state"].ToString();
+                }
 
                 if (actiondata["verb"] == null)
                     return null;
@@ -124,13 +135,13 @@ namespace Microsoft.BotBuilderSamples
                         case "initiateOAuth":
                             return await initiateOAuthAsync(turnContext, cancellationToken);
                         case "RefreshBasicCard":
-                            // verify token in invoke payload and return AC response
-                            return createAdaptiveCardInvokeResponseAsync(authentication, state);
+                            return createMessageResponseAsync();
                     }
                 }
                 // authToken or state is present. Verify token/state in invoke payload and return AC response
                 else
                 {
+                    // verify token in invoke payload and return AC response
                     return createAdaptiveCardInvokeResponseAsync(authentication, state);
                 }
             }
@@ -164,6 +175,18 @@ namespace Microsoft.BotBuilderSamples
                 Value = JsonConvert.DeserializeObject(cardJsonstring)
             };
             return CreateInvokeResponse(adaptiveCardResponse);
+        }
+
+        private InvokeResponse createMessageResponseAsync()
+        {
+            var messageResponse = JObject.FromObject(new
+            {
+                statusCode = 200,
+                type = "application/vnd.microsoft.activity.message",
+                value = "Message!"
+            });
+
+            return CreateInvokeResponse(messageResponse);
         }
 
 
