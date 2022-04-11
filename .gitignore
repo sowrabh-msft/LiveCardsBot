@@ -299,3 +299,8 @@ rush.json
 /experimental/common/scripts
 /experimental/generation/generator/.rush
 orchestrator.json
+/samples/csharp_dotnetcore/46.teams-auth/TeamsAppManifest/app.zip
+/samples/csharp_dotnetcore/46.teams-auth/TeamsAppManifest/app2.zip
+/samples/csharp_dotnetcore/46.teams-auth/TeamsAppManifest/app3.zip
+/samples/csharp_dotnetcore/46.teams-auth/TeamsAppManifest/sso_manifest.zip
+*.zip
