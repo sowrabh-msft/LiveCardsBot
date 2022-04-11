@@ -42,8 +42,32 @@
       "actions": [
         {
           "type": "Action.Execute",
-          "verb": "initiateAuth",
-          "title": "CheckForAuth",
+          "verb": "initiateSSO",
+          "title": "CheckForSSO",
+          "data": {
+            "CreatedBy": "${createdBy}"
+          }
+        },
+        {
+          "type": "Action.Execute",
+          "verb": "initiateOAuth",
+          "title": "CheckForOAuth",
+          "data": {
+            "CreatedBy": "${createdBy}"
+          }
+        },
+        {
+          "type": "Action.Execute",
+          "verb": "loopSSO",
+          "title": "LoopingSSO",
+          "data": {
+            "CreatedBy": "${createdBy}"
+          }
+        },
+        {
+          "type": "Action.Execute",
+          "verb": "loopOAuth",
+          "title": "LoopingOAuth",
           "data": {
             "CreatedBy": "${createdBy}"
           }
