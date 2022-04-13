@@ -71,6 +71,13 @@ namespace Microsoft.BotBuilderSamples
                 var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, turnContext.Activity.From.Name, member.Id);
                 await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
             }
+            else if (turnContext.Activity.Text.Contains("OAuth"))
+            {
+                string[] path = { ".", "Resources", "intialCard_without_authBlok_with_OAuth.json" };
+                var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
+                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, turnContext.Activity.From.Name, member.Id);
+                await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
+            }
             else
             {
                 // Run the Dialog with the new message Activity.
