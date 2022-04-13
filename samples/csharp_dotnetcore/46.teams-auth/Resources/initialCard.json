@@ -60,5 +60,6 @@
     }
   ],
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "appId": "ecc9fe9e-03df-4597-9c7d-22828d713d68",
   "version": "1.4"
 }
