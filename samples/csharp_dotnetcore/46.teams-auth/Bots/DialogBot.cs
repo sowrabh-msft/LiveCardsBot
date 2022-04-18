@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using AdaptiveCards.Templating;
 using System.IO;
+using AdaptiveCards;
 
 namespace Microsoft.BotBuilderSamples
 {
@@ -63,6 +64,20 @@ namespace Microsoft.BotBuilderSamples
                 var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, turnContext.Activity.From.Name, member.Id);
                 await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
             }
+            else if (turnContext.Activity.Text.Contains("Loop"))
+            {
+                string[] path = { ".", "Resources", "initialCardWithLoopTestButtons.json" };
+                var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
+                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, turnContext.Activity.From.Name, member.Id);
+                await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
+            }
+            else if (turnContext.Activity.Text.Contains("OAuth"))
+            {
+                string[] path = { ".", "Resources", "intialCard_without_authBlok_with_OAuth.json" };
+                var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
+                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, turnContext.Activity.From.Name, member.Id);
+                await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
+            }
             else
             {
                 // Run the Dialog with the new message Activity.
@@ -84,16 +99,123 @@ namespace Microsoft.BotBuilderSamples
 
             else if (turnContext.Activity.Name == "adaptiveCard/action")
             {
-                var signInLink = await GetSignInLinkAsync(turnContext, cancellationToken).ConfigureAwait(false);
-                var oAuthCard = new OAuthCard
+
+                if (turnContext.Activity.Value == null)
+                    return null;
+
+
+                JObject value = JsonConvert.DeserializeObject<JObject>(turnContext.Activity.Value.ToString());
+
+                if (value["action"] == null)
+                    return null;
+
+                JObject actiondata = JsonConvert.DeserializeObject<JObject>(value["action"].ToString());
+
+
+                JObject authentication = null;
+
+                if (value["authentication"] != null) {
+                    authentication = JsonConvert.DeserializeObject<JObject>(value["authentication"].ToString());
+                }
+
+                string state = null;
+
+                if (value["state"] != null) {
+                    state = value["state"].ToString();
+                }
+
+                if (actiondata["verb"] == null)
+                    return null;
+
+                string verb = actiondata["verb"].ToString();
+
+                // Loop sso and oauth for testing
+                if ("loopOAuth".Equals(verb))
                 {
-                    Text = "Signin Text",
-                    ConnectionName = "newConnection",
-                    TokenExchangeResource = new TokenExchangeResource
+                    return await initiateOAuthAsync(turnContext, cancellationToken);
+                }
+                else if ("loopSSO".Equals(verb))
+                {
+                    return await initiateSSOAsync(turnContext, cancellationToken);
+                }
+
+                // authToken and state are absent, handle verb
+                if (authentication == null && state == null)
+                {
+                    switch (verb)
                     {
-                        Id = Guid.NewGuid().ToString()
-                    },
-                    Buttons = new List<CardAction>
+                        case "initiateSSO":
+                            return await initiateSSOAsync(turnContext, cancellationToken);
+                        case "initiateOAuth":
+                            return await initiateOAuthAsync(turnContext, cancellationToken);
+                        case "RefreshBasicCard":
+                            return await initiateSSOAsync(turnContext, cancellationToken);
+                    }
+                }
+                // authToken or state is present. Verify token/state in invoke payload and return AC response
+                else
+                {
+                    // verify token in invoke payload and return AC response
+                    return createAdaptiveCardInvokeResponseAsync(authentication, state);
+                }
+            }
+            return null;
+        }
+
+        private InvokeResponse createAdaptiveCardInvokeResponseAsync(JObject authentication, string state)
+        {
+            //verify token is present or not
+
+            bool isTokenPresent = authentication != null ? true : false;
+            bool isStatePresent = state != null && state != "" ? true : false;
+
+            // TODO : Use token or state to perform operation on behalf of user
+
+            string[] filepath = { ".", "Resources", "adaptiveCardResponseJson.json" };
+
+            var adaptiveCardJson = File.ReadAllText(Path.Combine(filepath));
+            AdaptiveCardTemplate template = new AdaptiveCardTemplate(adaptiveCardJson);
+            var payloadData = new
+            {
+                authResult = isTokenPresent ? "SSO success" : isStatePresent ? "OAuth success" : "SSO/OAuth failed"
+            };
+
+            var cardJsonstring = template.Expand(payloadData);
+
+            var adaptiveCardResponse =  new AdaptiveCardInvokeResponse()
+            {
+                StatusCode = 200,
+                Type = AdaptiveCard.ContentType,
+                Value = JsonConvert.DeserializeObject(cardJsonstring)
+            };
+            return CreateInvokeResponse(adaptiveCardResponse);
+        }
+
+        private InvokeResponse createMessageResponseAsync()
+        {
+            var messageResponse = JObject.FromObject(new
+            {
+                statusCode = 200,
+                type = "application/vnd.microsoft.activity.message",
+                value = "Message!"
+            });
+
+            return CreateInvokeResponse(messageResponse);
+        }
+
+
+        private async Task<InvokeResponse> initiateSSOAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+        {
+            var signInLink = await GetSignInLinkAsync(turnContext, cancellationToken).ConfigureAwait(false);
+            var oAuthCard = new OAuthCard
+            {
+                Text = "Signin Text",
+                ConnectionName = "newConnection",
+                TokenExchangeResource = new TokenExchangeResource
+                {
+                    Id = Guid.NewGuid().ToString()
+                },
+                Buttons = new List<CardAction>
                     {
                         new CardAction
                         {
@@ -102,19 +224,46 @@ namespace Microsoft.BotBuilderSamples
                             Title = "Bot Service OAuth",
                         },
                     }
-                };
+            };
 
-                
-                var loginReqResponse = JObject.FromObject(new
-                {
-                    statusCode = 401,
-                    type = "application/vnd.microsoft.activity.loginRequest",
-                    value = oAuthCard
-                });
 
-                return CreateInvokeResponse(loginReqResponse);
-            }
-            return null;
+            var loginReqResponse = JObject.FromObject(new
+            {
+                statusCode = 401,
+                type = "application/vnd.microsoft.activity.loginRequest",
+                value = oAuthCard
+            });
+
+            return CreateInvokeResponse(loginReqResponse);
+        }
+
+        private async Task<InvokeResponse> initiateOAuthAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+        {
+            var signInLink = await GetSignInLinkAsync(turnContext, cancellationToken).ConfigureAwait(false);
+            var oAuthCard = new OAuthCard
+            {
+                Text = "Signin Text",
+                ConnectionName = "newConnection",
+                Buttons = new List<CardAction>
+                    {
+                        new CardAction
+                        {
+                            Type = ActionTypes.OpenUrl,
+                            Value = signInLink,
+                            Title = "Bot Service OAuth",
+                        },
+                    }
+            };
+
+
+            var loginReqResponse = JObject.FromObject(new
+            {
+                statusCode = 401,
+                type = "application/vnd.microsoft.activity.loginRequest",
+                value = oAuthCard
+            });
+
+            return CreateInvokeResponse(loginReqResponse);
         }
 
         private Attachment GetFirstOptionsAdaptiveCard(string[] filepath, string name = null, string userMRI = null)
