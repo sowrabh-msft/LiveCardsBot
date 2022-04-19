@@ -207,7 +207,7 @@ namespace Microsoft.BotBuilderSamples.Bots
             var adaptiveCardJson = File.ReadAllText(filepath);
             object adaptiveCard = JsonConvert.DeserializeObject(adaptiveCardJson);
            // string fluidContainerId = await CreateFluidContainer(adaptiveCard);
-            //adaptiveCard.FallbackText = fluidContainerId;
+            //adaptiveCard.FallbackText = fluidContainerId;;
             var adaptiveCardAttachment = new Attachment
             {
                 ContentType = "application/vnd.microsoft.card.adaptive",
