@@ -205,9 +205,9 @@ namespace Microsoft.BotBuilderSamples.Bots
         public  async Task<Attachment> FetchAdaptive(string filepath)
         {
             var adaptiveCardJson = File.ReadAllText(filepath);
-            AdaptiveCard adaptiveCard = JsonConvert.DeserializeObject<AdaptiveCard>(adaptiveCardJson);
-            string fluidContainerId = await CreateFluidContainer(adaptiveCard);
-            adaptiveCard.FallbackText = fluidContainerId;
+            object adaptiveCard = JsonConvert.DeserializeObject(adaptiveCardJson);
+           // string fluidContainerId = await CreateFluidContainer(adaptiveCard);
+            //adaptiveCard.FallbackText = fluidContainerId;
             var adaptiveCardAttachment = new Attachment
             {
                 ContentType = "application/vnd.microsoft.card.adaptive",
@@ -267,7 +267,7 @@ namespace Microsoft.BotBuilderSamples.Bots
                 version = timeStamp
             };
             string requestAsString = JsonConvert.SerializeObject(payload);
-            string requestUri = $"https://f6d2-2404-f801-8028-1-c827-f896-7274-22ce.ngrok.io/createCard";
+            string requestUri = $"https://45be-2404-f801-8028-1-9143-ac5f-702d-5226.ngrok.io/createCard";
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, requestUri);
 
             request.Content = new StringContent(requestAsString, System.Text.Encoding.UTF8, "application/json");
@@ -329,7 +329,7 @@ namespace Microsoft.BotBuilderSamples.Bots
                 }
             };
             string requestAsString = JsonConvert.SerializeObject(payload);
-            string requestUri = $"https://f6d2-2404-f801-8028-1-c827-f896-7274-22ce.ngrok.io/updateCard";
+            string requestUri = $"https://45be-2404-f801-8028-1-9143-ac5f-702d-5226.ngrok.io/updateCard";
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, requestUri);
 
             request.Content = new StringContent(requestAsString, System.Text.Encoding.UTF8, "application/json");
