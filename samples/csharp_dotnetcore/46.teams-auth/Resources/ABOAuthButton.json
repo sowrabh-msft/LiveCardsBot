@@ -1,0 +1,35 @@
+﻿{
+  "type": "AdaptiveCard",
+  "authentication": {
+    "text": "Signin Text",
+    "connectionName": "newConnection",
+    "buttons": [
+      {
+        "type": "signin",
+        "title": "Please sign in",
+        "value": "https://token.botframework.com/api/oauth/signin?signin=8a01e4a87ab046d7ac1e4ba87ed16519"
+      }
+    ]
+  },
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "Happy Testing",
+      "size": "Medium",
+      "weight": "Bolder"
+    },
+    {
+      "type": "ActionSet",
+      "actions": [
+        {
+          "type": "Action.Execute",
+          "verb": "initiateSSO",
+          "title": "Click Button!"
+        }
+      ]
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "appId": "ecc9fe9e-03df-4597-9c7d-22828d713d68",
+  "version": "1.4"
+}
