@@ -3,23 +3,14 @@
   "refresh": {
     "action": {
       "type": "Action.Execute",
-      "verb": "initiateOAuth",
-      "title": "RefreshTitle",
-      "data": {
-        "incidentId": "111"
-      }
+      "verb": "initiateSSO",
+      "title": "RefreshTitle"
     }
   },
   "body": [
     {
       "type": "TextBlock",
-      "text": "Request initiated by:",
-      "size": "Medium",
-      "weight": "Bolder"
-    },
-    {
-      "type": "TextBlock",
-      "text": "${createdBy}",
+      "text": "Happy Testing",
       "size": "Medium",
       "weight": "Bolder"
     },
@@ -28,11 +19,23 @@
       "actions": [
         {
           "type": "Action.Execute",
+          "verb": "initiateSSO",
+          "title": "SSO Button"
+        },
+        {
+          "type": "Action.Execute",
           "verb": "initiateOAuth",
-          "title": "CheckForOAuth",
-          "data": {
-            "CreatedBy": "${createdBy}"
-          }
+          "title": "OAuth Button"
+        },
+        {
+          "type": "Action.Execute",
+          "verb": "loopSSO",
+          "title": "Loop SSO"
+        },
+        {
+          "type": "Action.Execute",
+          "verb": "loopOAuth",
+          "title": "Loop OAuth"
         }
       ]
     }

@@ -1,0 +1,91 @@
+﻿{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "Select card type",
+      "size": "Medium",
+      "weight": "Bolder"
+    },
+    {
+      "type": "ActionSet",
+      "actions": [
+        {
+          "type": "Action.Submit",
+          "title": "Auth Block With SSO And Refresh",
+          "data": {
+            "msteams": {
+              "type": "messageBack",
+              "displayText": "Auth Block With SSO And Refresh",
+              "text": "ABSSORefresh",
+              "value": "{\"bfKey\": \"bfVal\", \"conflictKey\": \"from value\"}"
+            }
+          }
+        },
+        {
+          "type": "Action.Submit",
+          "title": "Auth Block With OAuth And Refresh",
+          "data": {
+            "msteams": {
+              "type": "messageBack",
+              "displayText": "Auth Block With OAuth And Refresh",
+              "text": "ABOAuthRefresh",
+              "value": "{\"bfKey\": \"bfVal\", \"conflictKey\": \"from value\"}"
+            }
+          }
+        },
+        {
+          "type": "Action.Submit",
+          "title": "Auth Block With SSO And Button",
+          "data": {
+            "msteams": {
+              "type": "messageBack",
+              "displayText": "Auth Block With SSO And Button",
+              "text": "ABSSOButton",
+              "value": "{\"bfKey\": \"bfVal\", \"conflictKey\": \"from value\"}"
+            }
+          }
+        },
+        {
+          "type": "Action.Submit",
+          "title": "Auth Block With OAuth And Button",
+          "data": {
+            "msteams": {
+              "type": "messageBack",
+              "displayText": "Auth Block With OAuth And Button",
+              "text": "ABOAuthButton",
+              "value": "{\"bfKey\": \"bfVal\", \"conflictKey\": \"from value\"}"
+            }
+          }
+        },
+        {
+          "type": "Action.Submit",
+          "title": "Refresh With SSO",
+          "data": {
+            "msteams": {
+              "type": "messageBack",
+              "displayText": "Refresh With SSO",
+              "text": "SSORefresh",
+              "value": "{\"bfKey\": \"bfVal\", \"conflictKey\": \"from value\"}"
+            }
+          }
+        },
+        {
+          "type": "Action.Submit",
+          "title": "Refresh with OAuth",
+          "data": {
+            "msteams": {
+              "type": "messageBack",
+              "displayText": "Refresh with OAuth",
+              "text": "OAuthRefresh",
+              "value": "{\"bfKey\": \"bfVal\", \"conflictKey\": \"from value\"}"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "appId": "ecc9fe9e-03df-4597-9c7d-22828d713d68",
+  "version": "1.4"
+}
