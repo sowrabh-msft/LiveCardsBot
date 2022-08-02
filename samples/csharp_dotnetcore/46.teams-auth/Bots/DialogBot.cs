@@ -65,7 +65,11 @@ namespace Microsoft.BotBuilderSamples
             {"3", "ABSSOButton.json"},
             {"4", "ABOAuthButton.json"},
             {"5", "SSORefresh.json"},
-            {"6", "OAuthRefresh.json"}
+            {"6", "OAuthRefresh.json"},
+            {"7", "ABAB.json"},
+            {"8", "ABSSORefresh412.json"},
+            {"9", "SSORefresh412.json"},
+            {"10", "SSORefreshWithoutSignIn.json" }
         };
 
         Dictionary<string, string> cardIdToCardName = new Dictionary<string, string>(){
@@ -74,7 +78,11 @@ namespace Microsoft.BotBuilderSamples
             {"3", "Auth Block With SSO And Button"},
             {"4", "Auth Block With OAuth And Button"},
             {"5", "Refresh With SSO"},
-            {"6", "Refresh with OAuth"}
+            {"6", "Refresh with OAuth"},
+            {"7", "Authentication Block on Every Refresh"},
+            {"8", "Test 412 with Auth block and Refresh"},
+            {"9", "Test 412 with refresh"},
+            { "10", "SSO Without SignIn"}
         };
 
         protected override async Task<MessagingExtensionResponse> OnTeamsAppBasedLinkQueryAsync(ITurnContext<IInvokeActivity> turnContext, AppBasedLinkQuery query, CancellationToken cancellationToken)
@@ -187,12 +195,19 @@ namespace Microsoft.BotBuilderSamples
                 var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, signInLink, turnContext.Activity.From.Name, member.Id);
                 await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
             }
+            else if (turnContext.Activity.Text.Contains("ABAB"))
+            {
+                string[] path = { ".", "Resources", "ABAB.json" };
+                var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
+                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, signInLink, turnContext.Activity.From.Name, member.Id);
+                await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
+            }
             else
             {
                 await turnContext.SendActivityAsync(MessageFactory.Text("Please send 'hi' for options"), cancellationToken);
             }
         }
-
+        
         protected override async Task<InvokeResponse> OnInvokeActivityAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
         {
             if(turnContext.Activity.Name == "signin/verifyState")
@@ -227,9 +242,23 @@ namespace Microsoft.BotBuilderSamples
 
                 if (value["authentication"] != null) {
                     authentication = JsonConvert.DeserializeObject<JObject>(value["authentication"].ToString());
-                    if ("TestPreConditionFailed".Equals(verb))
+                    string token = authentication["token"].ToString();
+                    var userTokenClient = turnContext.TurnState.Get<UserTokenClient>();
+                    var tokenResource = await userTokenClient.ExchangeTokenAsync(turnContext.Activity.From.Id, _connectionName, turnContext.Activity.ChannelId, new TokenExchangeRequest(null, token), cancellationToken).ConfigureAwait(false);
+                    Console.WriteLine(tokenResource);
+                    if ("TestPreConditionFailed".Equals(verb) || "TestPreConditionFailedWithoutSignIn".Equals(verb))
                     {
-                        // TODO send 412 response
+                        var loginReqResponse = JObject.FromObject(new
+                        {
+                            statusCode = 412,
+                            type = "application/vnd.microsoft.error.preconditionFailed",
+                            value = new {
+                            code = "412",
+                            message = "token expired"
+                        }
+                        });
+
+                        return CreateInvokeResponse(loginReqResponse);
                     }
                 }
 
@@ -253,19 +282,32 @@ namespace Microsoft.BotBuilderSamples
                 {
                     switch (verb)
                     {
+                        case "TestPreConditionFailed":
+                            return await initiateSSOAsync(turnContext, cancellationToken);
+                        case "TestPreConditionFailedWithoutSignIn":
+                            return await initiateSSOWithoutSignAsync(turnContext, cancellationToken);
                         case "initiateSSO":
                             return await initiateSSOAsync(turnContext, cancellationToken);
                         case "initiateOAuth":
                             return await initiateOAuthAsync(turnContext, cancellationToken); //basicRefresh
                         case "basicRefresh":
                             return createAdaptiveCardInvokeResponseAsync(null, null, true);
+                        case "abrefresh":
+                            return createAdaptiveCardInvokeResponseAsync(authentication, state, false, "ABAB.json");
                     }
                 }
                 // authToken or state is present. Verify token/state in invoke payload and return AC response
                 else
                 {
+                    switch (verb)
+                    {
+                        case "abrefresh":
+                            return createAdaptiveCardInvokeResponseAsync(authentication, state, false, "ABAB.json");
+                        default:
+                            return createAdaptiveCardInvokeResponseAsync(authentication, state);
+                    }
                     // verify token in invoke payload and return AC response
-                    return createAdaptiveCardInvokeResponseAsync(authentication, state);
+                    
                 }
             }
 
@@ -288,7 +330,7 @@ namespace Microsoft.BotBuilderSamples
             return obj.ToObject<T>();
         }
 
-        private InvokeResponse createAdaptiveCardInvokeResponseAsync(JObject authentication, string state, bool isBasicRefresh = false)
+        private InvokeResponse createAdaptiveCardInvokeResponseAsync(JObject authentication, string state, bool isBasicRefresh = false, string fileName = "adaptiveCardResponseJson.json")
         {
             //verify token is present or not
 
@@ -297,7 +339,7 @@ namespace Microsoft.BotBuilderSamples
 
             // TODO : Use token or state to perform operation on behalf of user
 
-            string[] filepath = { ".", "Resources", "adaptiveCardResponseJson.json" };
+            string[] filepath = { ".", "Resources", fileName };
 
             var adaptiveCardJson = File.ReadAllText(Path.Combine(filepath));
             AdaptiveCardTemplate template = new AdaptiveCardTemplate(adaptiveCardJson);
@@ -352,6 +394,39 @@ namespace Microsoft.BotBuilderSamples
                         {
                             Type = ActionTypes.Signin,
                             Value = signInLink,
+                            Title = "Please sign in",
+                        },
+                    }
+            };
+
+
+            var loginReqResponse = JObject.FromObject(new
+            {
+                statusCode = 401,
+                type = "application/vnd.microsoft.activity.loginRequest",
+                value = oAuthCard
+            });
+
+            return CreateInvokeResponse(loginReqResponse);
+        }
+
+        private async Task<InvokeResponse> initiateSSOWithoutSignAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+        {
+            var signInLink = await GetSignInLinkAsync(turnContext, cancellationToken).ConfigureAwait(false);
+            var oAuthCard = new OAuthCard
+            {
+                Text = "Signin Text",
+                ConnectionName = "newConnection",
+                TokenExchangeResource = new TokenExchangeResource
+                {
+                    Id = Guid.NewGuid().ToString()
+                },
+                Buttons = new List<CardAction>
+                    {
+                        new CardAction
+                        {
+                            Type = ActionTypes.Signin,
+                            Value = "",
                             Title = "Please sign in",
                         },
                     }

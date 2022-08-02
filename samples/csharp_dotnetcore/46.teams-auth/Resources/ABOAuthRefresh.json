@@ -47,6 +47,11 @@
           "type": "Action.Execute",
           "verb": "loopOAuth",
           "title": "Loop OAuth"
+        },
+        {
+          "type": "Action.Execute",
+          "verb": "TestPreConditionFailed",
+          "title": "Test PreCondition Failed SSO"
         }
       ]
     }

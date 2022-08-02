@@ -81,6 +81,18 @@
               "value": "{\"bfKey\": \"bfVal\", \"conflictKey\": \"from value\"}"
             }
           }
+        },
+        {
+          "type": "Action.Submit",
+          "title": "Authentication Block on Every Refresh",
+          "data": {
+            "msteams": {
+              "type": "messageBack",
+              "displayText": "Authentication Block on Every Refresh",
+              "text": "ABAB",
+              "value": "{\"bfKey\": \"bfVal\", \"conflictKey\": \"from value\"}"
+            }
+          }
         }
       ]
     }
