@@ -3,11 +3,8 @@
   "refresh": {
     "action": {
       "type": "Action.Execute",
-      "verb": "RefreshBasicCard",
-      "title": "RefreshTitle",
-      "data": {
-        "incidentId": "111"
-      }
+      "verb": "TestPreConditionFailed",
+      "title": "RefreshTitle"
     }
   },
   "authentication": {
@@ -18,8 +15,8 @@
     },
     "buttons": [
       {
-        "type": "openUrl",
-        "title": "Bot Service OAuth",
+        "type": "signin",
+        "title": "Please sign in",
         "value": "https://token.botframework.com/api/oauth/signin?signin=8a01e4a87ab046d7ac1e4ba87ed16519"
       }
     ]
@@ -27,13 +24,7 @@
   "body": [
     {
       "type": "TextBlock",
-      "text": "Request initiated by:",
-      "size": "Medium",
-      "weight": "Bolder"
-    },
-    {
-      "type": "TextBlock",
-      "text": "${createdBy}",
+      "text": "Happy Testing",
       "size": "Medium",
       "weight": "Bolder"
     },
@@ -43,18 +34,27 @@
         {
           "type": "Action.Execute",
           "verb": "initiateSSO",
-          "title": "CheckForSSO",
-          "data": {
-            "CreatedBy": "${createdBy}"
-          }
+          "title": "SSO Button"
         },
         {
           "type": "Action.Execute",
           "verb": "initiateOAuth",
-          "title": "CheckForOAuth",
-          "data": {
-            "CreatedBy": "${createdBy}"
-          }
+          "title": "OAuth Button"
+        },
+        {
+          "type": "Action.Execute",
+          "verb": "loopSSO",
+          "title": "Loop SSO"
+        },
+        {
+          "type": "Action.Execute",
+          "verb": "loopOAuth",
+          "title": "Loop OAuth"
+        },
+        {
+          "type": "Action.Execute",
+          "verb": "TestPreConditionFailed",
+          "title": "Test PreCondition Failed SSO"
         }
       ]
     }

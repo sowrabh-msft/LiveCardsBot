@@ -3,7 +3,7 @@
   "refresh": {
     "action": {
       "type": "Action.Execute",
-      "verb": "basicRefresh",
+      "verb": "initiateOAuth",
       "title": "RefreshTitle"
     }
   },
@@ -11,12 +11,6 @@
     {
       "type": "TextBlock",
       "text": "Happy Testing",
-      "size": "Medium",
-      "weight": "Bolder"
-    },
-    {
-      "type": "TextBlock",
-      "text": "Refreshed Card",
       "size": "Medium",
       "weight": "Bolder"
     },
@@ -42,28 +36,8 @@
           "type": "Action.Execute",
           "verb": "loopOAuth",
           "title": "Loop OAuth"
-        },
-        {
-          "type": "Action.Execute",
-          "verb": "TestPreConditionFailed",
-          "title": "Test PreCondition Failed SSO"
-        },
-        {
-          "type": "Action.Execute",
-          "verb": "TestPreConditionFailedWithoutSignIn",
-          "title": "Test PreCondition Failed SSO without SignIn"
-        },
-        {
-          "type": "Action.Submit",
-          "title": "Action Submit Button"
         }
       ]
-    },
-    {
-      "type": "TextBlock",
-      "text": "${authResult}",
-      "size": "Medium",
-      "weight": "Bolder"
     }
   ],
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",

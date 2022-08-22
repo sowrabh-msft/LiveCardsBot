@@ -16,6 +16,10 @@ using Newtonsoft.Json;
 using AdaptiveCards.Templating;
 using System.IO;
 using AdaptiveCards;
+using Microsoft.Bot.Schema.Teams;
+using System.Linq;
+using System.Net;
+using Microsoft.Bot.Connector;
 
 namespace Microsoft.BotBuilderSamples
 {
@@ -53,38 +57,157 @@ namespace Microsoft.BotBuilderSamples
             // Save any state changes that might have occurred during the turn.
             await ConversationState.SaveChangesAsync(turnContext, false, cancellationToken);
             await UserState.SaveChangesAsync(turnContext, false, cancellationToken);
+        } 
+
+        Dictionary<string, string> cardIdToFile = new Dictionary<string, string>(){
+            {"1", "ABSSORefresh.json"},
+            {"2", "ABOAuthRefresh.json"},
+            {"3", "ABSSOButton.json"},
+            {"4", "ABOAuthButton.json"},
+            {"5", "SSORefresh.json"},
+            {"6", "OAuthRefresh.json"},
+            {"7", "ABAB.json"},
+            {"8", "ABSSORefresh412.json"},
+            {"9", "SSORefresh412.json"},
+            {"10", "SSORefreshWithoutSignIn.json" }
+        };
+
+        Dictionary<string, string> cardIdToCardName = new Dictionary<string, string>(){
+            {"1", "Auth Block With SSO And Refresh"},
+            {"2", "Auth Block With OAuth And Refresh"},
+            {"3", "Auth Block With SSO And Button"},
+            {"4", "Auth Block With OAuth And Button"},
+            {"5", "Refresh With SSO"},
+            {"6", "Refresh with OAuth"},
+            {"7", "Authentication Block on Every Refresh"},
+            {"8", "Test 412 with Auth block and Refresh"},
+            {"9", "Test 412 with refresh"},
+            { "10", "SSO Without SignIn"}
+        };
+
+        protected override async Task<MessagingExtensionResponse> OnTeamsAppBasedLinkQueryAsync(ITurnContext<IInvokeActivity> turnContext, AppBasedLinkQuery query, CancellationToken cancellationToken)
+        {
+            var signInLink = await GetSignInLinkAsync(turnContext, cancellationToken).ConfigureAwait(false);
+            string cardId = query.Url.Split('/')[query.Url.Split('/').Length - 1];
+            if (!cardIdToFile.ContainsKey(cardId)) {
+                return new MessagingExtensionResponse();
+            }
+            string[] path = { ".", "Resources", cardIdToFile[cardId] };
+            var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
+            var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, signInLink, turnContext.Activity.From.Name, member.Id).Content;
+            var heroCard = new ThumbnailCard
+            {
+                Title = cardIdToCardName[cardId],
+                Text = query.Url,
+            };
+
+            var attachments = new MessagingExtensionAttachment(AdaptiveCard.ContentType, null, initialAdaptiveCard, null, null, heroCard.ToAttachment());
+            var result = new MessagingExtensionResult("list", "result", new[] { attachments });
+
+            return new MessagingExtensionResponse(result);
+        }
+
+        protected override async Task<MessagingExtensionResponse> OnTeamsMessagingExtensionQueryAsync(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionQuery query, CancellationToken cancellationToken)
+        {
+            var signInLink = await GetSignInLinkAsync(turnContext, cancellationToken).ConfigureAwait(false);
+            var cardId = query?.Parameters?[0]?.Value as string ?? string.Empty;
+            if (!cardIdToFile.ContainsKey(cardId))
+            {
+                return new MessagingExtensionResponse();
+            }
+
+            string[] path = { ".", "Resources", cardIdToFile[cardId] };
+            var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
+            var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, signInLink, turnContext.Activity.From.Name, member.Id).Content;
+            var previewcard = new ThumbnailCard
+            {
+                Title = "Adaptive Card",
+                Text = cardIdToCardName[cardId]
+            };
+
+            var attachment = new MessagingExtensionAttachment
+            {
+                ContentType = "application/vnd.microsoft.card.adaptive",
+                Content = initialAdaptiveCard,
+                Preview = previewcard.ToAttachment()
+            };
+
+            return new MessagingExtensionResponse
+            {
+                ComposeExtension = new MessagingExtensionResult
+                {
+                    Type = "result",
+                    AttachmentLayout = "list",
+                    Attachments = new List<MessagingExtensionAttachment> { attachment }
+                }
+            };
         }
 
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
-            if (turnContext.Activity.Text.Contains("ACv2"))
+            var signInLink = await GetSignInLinkAsync(turnContext, cancellationToken).ConfigureAwait(false);
+            if (turnContext.Activity.Text.Contains("hi"))
             {
-                string[] path = { ".", "Resources", "initialCard.json" };
+                string[] path = { ".", "Resources", "options.json" };
                 var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
-                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, turnContext.Activity.From.Name, member.Id);
+                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, signInLink, turnContext.Activity.From.Name, member.Id);
                 await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
             }
-            else if (turnContext.Activity.Text.Contains("Loop"))
+            else if (turnContext.Activity.Text.Contains("ABSSORefresh"))
             {
-                string[] path = { ".", "Resources", "initialCardWithLoopTestButtons.json" };
+                string[] path = { ".", "Resources", "ABSSORefresh.json" };
                 var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
-                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, turnContext.Activity.From.Name, member.Id);
+                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, signInLink, turnContext.Activity.From.Name, member.Id);
                 await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
             }
-            else if (turnContext.Activity.Text.Contains("OAuth"))
+            else if (turnContext.Activity.Text.Contains("ABOAuthRefresh"))
             {
-                string[] path = { ".", "Resources", "intialCard_without_authBlok_with_OAuth.json" };
+                string[] path = { ".", "Resources", "ABOAuthRefresh.json" };
                 var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
-                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, turnContext.Activity.From.Name, member.Id);
+                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, signInLink, turnContext.Activity.From.Name, member.Id);
+                await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
+            }
+            else if (turnContext.Activity.Text.Contains("ABSSOButton"))
+            {
+                string[] path = { ".", "Resources", "ABSSOButton.json" };
+                var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
+                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, signInLink, turnContext.Activity.From.Name, member.Id);
+                await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
+            }
+            else if (turnContext.Activity.Text.Contains("ABOAuthButton"))
+            {
+                string[] path = { ".", "Resources", "ABOAuthButton.json" };
+                var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
+                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, signInLink, turnContext.Activity.From.Name, member.Id);
+                await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
+            }
+            else if (turnContext.Activity.Text.Contains("SSORefresh"))
+            {
+                string[] path = { ".", "Resources", "SSORefresh.json" };
+                var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
+                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, signInLink, turnContext.Activity.From.Name, member.Id);
+                await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
+            }
+            else if (turnContext.Activity.Text.Contains("OAuthRefresh"))
+            {
+                string[] path = { ".", "Resources", "OAuthRefresh.json" };
+                var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
+                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, signInLink, turnContext.Activity.From.Name, member.Id);
+                await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
+            }
+            else if (turnContext.Activity.Text.Contains("ABAB"))
+            {
+                string[] path = { ".", "Resources", "ABAB.json" };
+                var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
+                var initialAdaptiveCard = GetFirstOptionsAdaptiveCard(path, signInLink, turnContext.Activity.From.Name, member.Id);
                 await turnContext.SendActivityAsync(MessageFactory.Attachment(initialAdaptiveCard), cancellationToken);
             }
             else
             {
-                // Run the Dialog with the new message Activity.
-                await Dialog.RunAsync(turnContext, ConversationState.CreateProperty<DialogState>(nameof(DialogState)), cancellationToken);
+                await turnContext.SendActivityAsync(MessageFactory.Text("Please send 'hi' for options"), cancellationToken);
             }
         }
-
+        
         protected override async Task<InvokeResponse> OnInvokeActivityAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
         {
             if(turnContext.Activity.Name == "signin/verifyState")
@@ -111,23 +234,38 @@ namespace Microsoft.BotBuilderSamples
 
                 JObject actiondata = JsonConvert.DeserializeObject<JObject>(value["action"].ToString());
 
-
-                JObject authentication = null;
-
-                if (value["authentication"] != null) {
-                    authentication = JsonConvert.DeserializeObject<JObject>(value["authentication"].ToString());
-                }
-
-                string state = null;
-
-                if (value["state"] != null) {
-                    state = value["state"].ToString();
-                }
-
                 if (actiondata["verb"] == null)
                     return null;
 
                 string verb = actiondata["verb"].ToString();
+                JObject authentication = null;
+
+                if (value["authentication"] != null) {
+                    authentication = JsonConvert.DeserializeObject<JObject>(value["authentication"].ToString());
+                    string token = authentication["token"].ToString();
+                    var userTokenClient = turnContext.TurnState.Get<UserTokenClient>();
+                    var tokenResource = await userTokenClient.ExchangeTokenAsync(turnContext.Activity.From.Id, _connectionName, turnContext.Activity.ChannelId, new TokenExchangeRequest(null, token), cancellationToken).ConfigureAwait(false);
+                    Console.WriteLine(tokenResource);
+                    if ("TestPreConditionFailed".Equals(verb) || "TestPreConditionFailedWithoutSignIn".Equals(verb))
+                    {
+                        var loginReqResponse = JObject.FromObject(new
+                        {
+                            statusCode = 412,
+                            type = "application/vnd.microsoft.error.preconditionFailed",
+                            value = new {
+                            code = "412",
+                            message = "token expired"
+                        }
+                        });
+
+                        return CreateInvokeResponse(loginReqResponse);
+                    }
+                }
+
+                string state = null;
+                if (value["state"] != null) {
+                    state = value["state"].ToString();
+                }
 
                 // Loop sso and oauth for testing
                 if ("loopOAuth".Equals(verb))
@@ -144,25 +282,55 @@ namespace Microsoft.BotBuilderSamples
                 {
                     switch (verb)
                     {
+                        case "TestPreConditionFailed":
+                            return await initiateSSOAsync(turnContext, cancellationToken);
+                        case "TestPreConditionFailedWithoutSignIn":
+                            return await initiateSSOWithoutSignAsync(turnContext, cancellationToken);
                         case "initiateSSO":
                             return await initiateSSOAsync(turnContext, cancellationToken);
                         case "initiateOAuth":
-                            return await initiateOAuthAsync(turnContext, cancellationToken);
-                        case "RefreshBasicCard":
-                            return await initiateSSOAsync(turnContext, cancellationToken);
+                            return await initiateOAuthAsync(turnContext, cancellationToken); //basicRefresh
+                        case "basicRefresh":
+                            return createAdaptiveCardInvokeResponseAsync(null, null, true);
+                        case "abrefresh":
+                            return createAdaptiveCardInvokeResponseAsync(authentication, state, false, "ABAB.json");
                     }
                 }
                 // authToken or state is present. Verify token/state in invoke payload and return AC response
                 else
                 {
+                    switch (verb)
+                    {
+                        case "abrefresh":
+                            return createAdaptiveCardInvokeResponseAsync(authentication, state, false, "ABAB.json");
+                        default:
+                            return createAdaptiveCardInvokeResponseAsync(authentication, state);
+                    }
                     // verify token in invoke payload and return AC response
-                    return createAdaptiveCardInvokeResponseAsync(authentication, state);
+                    
                 }
             }
+
+            else if (turnContext.Activity.Name == "composeExtension/queryLink") 
+                            return CreateInvokeResponse(await OnTeamsAppBasedLinkQueryAsync(turnContext, SafeCast<AppBasedLinkQuery>(turnContext.Activity.Value), cancellationToken).ConfigureAwait(false));
+
+            else if (turnContext.Activity.Name == "composeExtension/query")
+                return CreateInvokeResponse(await OnTeamsMessagingExtensionQueryAsync(turnContext, SafeCast<MessagingExtensionQuery>(turnContext.Activity.Value), cancellationToken).ConfigureAwait(false));
             return null;
         }
 
-        private InvokeResponse createAdaptiveCardInvokeResponseAsync(JObject authentication, string state)
+        private static T SafeCast<T>(object value)
+        {
+            var obj = value as JObject;
+            if (obj == null)
+            {
+                throw new InvokeResponseException(HttpStatusCode.BadRequest, $"expected type '{value.GetType().Name}'");
+            }
+
+            return obj.ToObject<T>();
+        }
+
+        private InvokeResponse createAdaptiveCardInvokeResponseAsync(JObject authentication, string state, bool isBasicRefresh = false, string fileName = "adaptiveCardResponseJson.json")
         {
             //verify token is present or not
 
@@ -171,13 +339,18 @@ namespace Microsoft.BotBuilderSamples
 
             // TODO : Use token or state to perform operation on behalf of user
 
-            string[] filepath = { ".", "Resources", "adaptiveCardResponseJson.json" };
+            string[] filepath = { ".", "Resources", fileName };
 
             var adaptiveCardJson = File.ReadAllText(Path.Combine(filepath));
             AdaptiveCardTemplate template = new AdaptiveCardTemplate(adaptiveCardJson);
+            var authResultData = isTokenPresent ? "SSO success" : isStatePresent ? "OAuth success" : "SSO/OAuth failed";
+            if (isBasicRefresh)
+            {
+                authResultData = "Refresh done";
+            }
             var payloadData = new
             {
-                authResult = isTokenPresent ? "SSO success" : isStatePresent ? "OAuth success" : "SSO/OAuth failed"
+                authResult = authResultData
             };
 
             var cardJsonstring = template.Expand(payloadData);
@@ -219,9 +392,42 @@ namespace Microsoft.BotBuilderSamples
                     {
                         new CardAction
                         {
-                            Type = ActionTypes.OpenUrl,
+                            Type = ActionTypes.Signin,
                             Value = signInLink,
-                            Title = "Bot Service OAuth",
+                            Title = "Please sign in",
+                        },
+                    }
+            };
+
+
+            var loginReqResponse = JObject.FromObject(new
+            {
+                statusCode = 401,
+                type = "application/vnd.microsoft.activity.loginRequest",
+                value = oAuthCard
+            });
+
+            return CreateInvokeResponse(loginReqResponse);
+        }
+
+        private async Task<InvokeResponse> initiateSSOWithoutSignAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+        {
+            var signInLink = await GetSignInLinkAsync(turnContext, cancellationToken).ConfigureAwait(false);
+            var oAuthCard = new OAuthCard
+            {
+                Text = "Signin Text",
+                ConnectionName = "newConnection",
+                TokenExchangeResource = new TokenExchangeResource
+                {
+                    Id = Guid.NewGuid().ToString()
+                },
+                Buttons = new List<CardAction>
+                    {
+                        new CardAction
+                        {
+                            Type = ActionTypes.Signin,
+                            Value = "",
+                            Title = "Please sign in",
                         },
                     }
             };
@@ -248,9 +454,9 @@ namespace Microsoft.BotBuilderSamples
                     {
                         new CardAction
                         {
-                            Type = ActionTypes.OpenUrl,
+                            Type = ActionTypes.Signin,
                             Value = signInLink,
-                            Title = "Bot Service OAuth",
+                            Title = "Please sign in",
                         },
                     }
             };
@@ -266,7 +472,7 @@ namespace Microsoft.BotBuilderSamples
             return CreateInvokeResponse(loginReqResponse);
         }
 
-        private Attachment GetFirstOptionsAdaptiveCard(string[] filepath, string name = null, string userMRI = null)
+        private Attachment GetFirstOptionsAdaptiveCard(string[] filepath, string signInLink, string name = null, string userMRI = null)
         {
             var adaptiveCardJson = File.ReadAllText(Path.Combine(filepath));
             AdaptiveCardTemplate template = new AdaptiveCardTemplate(adaptiveCardJson);
@@ -276,10 +482,15 @@ namespace Microsoft.BotBuilderSamples
                 createdBy = name
             };
             var cardJsonstring = template.Expand(payloadData);
+            var card = JsonConvert.DeserializeObject<JObject>(cardJsonstring);
+            if(card["authentication"] != null && card["authentication"]["buttons"] != null && card["authentication"]["buttons"][0] != null)
+            {
+                card["authentication"]["buttons"][0]["value"] = signInLink;
+            }
             var adaptiveCardAttachment = new Attachment()
             {
                 ContentType = "application/vnd.microsoft.card.adaptive",
-                Content = JsonConvert.DeserializeObject(cardJsonstring),
+                Content = card,
             };
             return adaptiveCardAttachment;
         }

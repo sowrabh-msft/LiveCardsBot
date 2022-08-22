@@ -1,15 +1,16 @@
 ﻿{
   "type": "AdaptiveCard",
+  "refresh": {
+    "action": {
+      "type": "Action.Execute",
+      "verb": "TestPreConditionFailed",
+      "title": "RefreshTitle"
+    }
+  },
   "body": [
     {
       "type": "TextBlock",
-      "text": "Request initiated by:",
-      "size": "Medium",
-      "weight": "Bolder"
-    },
-    {
-      "type": "TextBlock",
-      "text": "${createdBy}",
+      "text": "Happy Testing",
       "size": "Medium",
       "weight": "Bolder"
     },
@@ -19,34 +20,22 @@
         {
           "type": "Action.Execute",
           "verb": "initiateSSO",
-          "title": "CheckForSSO",
-          "data": {
-            "CreatedBy": "${createdBy}"
-          }
+          "title": "SSO Button"
         },
         {
           "type": "Action.Execute",
           "verb": "initiateOAuth",
-          "title": "CheckForOAuth",
-          "data": {
-            "CreatedBy": "${createdBy}"
-          }
+          "title": "OAuth Button"
         },
         {
           "type": "Action.Execute",
           "verb": "loopSSO",
-          "title": "LoopingSSO",
-          "data": {
-            "CreatedBy": "${createdBy}"
-          }
+          "title": "Loop SSO"
         },
         {
           "type": "Action.Execute",
           "verb": "loopOAuth",
-          "title": "LoopingOAuth",
-          "data": {
-            "CreatedBy": "${createdBy}"
-          }
+          "title": "Loop OAuth"
         }
       ]
     }

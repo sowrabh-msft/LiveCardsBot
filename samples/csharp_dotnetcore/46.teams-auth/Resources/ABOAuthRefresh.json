@@ -3,20 +3,25 @@
   "refresh": {
     "action": {
       "type": "Action.Execute",
-      "verb": "basicRefresh",
+      "verb": "initiateSSO",
       "title": "RefreshTitle"
     }
+  },
+  "authentication": {
+    "text": "Signin Text",
+    "connectionName": "newConnection",
+    "buttons": [
+      {
+        "type": "signin",
+        "title": "Please sign in",
+        "value": "https://token.botframework.com/api/oauth/signin?signin=8a01e4a87ab046d7ac1e4ba87ed16519"
+      }
+    ]
   },
   "body": [
     {
       "type": "TextBlock",
       "text": "Happy Testing",
-      "size": "Medium",
-      "weight": "Bolder"
-    },
-    {
-      "type": "TextBlock",
-      "text": "Refreshed Card",
       "size": "Medium",
       "weight": "Bolder"
     },
@@ -47,23 +52,8 @@
           "type": "Action.Execute",
           "verb": "TestPreConditionFailed",
           "title": "Test PreCondition Failed SSO"
-        },
-        {
-          "type": "Action.Execute",
-          "verb": "TestPreConditionFailedWithoutSignIn",
-          "title": "Test PreCondition Failed SSO without SignIn"
-        },
-        {
-          "type": "Action.Submit",
-          "title": "Action Submit Button"
         }
       ]
-    },
-    {
-      "type": "TextBlock",
-      "text": "${authResult}",
-      "size": "Medium",
-      "weight": "Bolder"
     }
   ],
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
