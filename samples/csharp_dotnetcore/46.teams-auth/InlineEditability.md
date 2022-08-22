@@ -15,25 +15,25 @@ UI of showing data and taking user input will become simplistic.
 
 As shown in the below picture, An adaptive card displays data for Customer name, Est. Revenue and Est. Clode Date. If an user wants to update those information, he will have to click on 'Edit' button which will open some form and there he can update values for 'Est. Revenue' etc. and Click on Save to send data back to the bot service.
 
-![img](../assets/InlineEditability/InlineEditabilitySecnario1.png)
+![img](assets/InlineEditability/InlineEditabilitySecnario1.png)
 
 
 
 ## Proposed experience:
 Adaptive cards use `Input` fields to collect user data. This is how current user experience of `Input` fields looks like:
 
- ![img](../assets/InlineEditability/InlineEditabilitySecnario7.png)
+ ![img](assets/InlineEditability/InlineEditabilitySecnario7.png)
 
 
 We will allow bot developer to enhance the user experience of all `Input` fields in Adaptive card (such as `Input.Text`, `Input.Number`, `Input.Date`, `Input.Time`, `Input.Toggle` and `Input.Choiceset`) in way that, these input fields can appear just as readable fields when user is not taking any action and when user clicks or focusses on them, it allows user to update those fields and then user can use use action buttons like Action.Submit/Action.Execute to send data back to the bot.
 
 
 This is an adaptive showing information like "Status", "Owner", "Est. Revenue" and "Est. Close Date"
-![img](../assets/InlineEditability/InlineEditabilitySecnario2.png)
+![img](assets/InlineEditability/InlineEditabilitySecnario2.png)
 
 When user want to update lets say "Est. Revenue", he can click on the value and card will allow user to update the value. and after updating he can click on "Save" button to send data back to the bot.
 
-![img](../assets/InlineEditability/InlineEditabilitySecnario3.png)
+![img](assets/InlineEditability/InlineEditabilitySecnario3.png)
 
 To achieve this, `Input` fields will have `readWrite` as their inputStyle property, which will modify the user experience as follows: (In the above picture "Est. Revenue" is of type `Input.Text`)
 
@@ -43,11 +43,11 @@ To achieve this, `Input` fields will have `readWrite` as their inputStyle proper
 
 Similar user experience for `Input.Date` with 'readWrite' inputStyle property.
 
-![img](../assets/InlineEditability/InlineEditabilitySecnario4.png)
+![img](assets/InlineEditability/InlineEditabilitySecnario4.png)
 
 and `Input.Choiceset` with 'readWrite' inputStyle property.
 
-![img](../assets/InlineEditability/InlineEditabilitySecnario6.png)
+![img](assets/InlineEditability/InlineEditabilitySecnario6.png)
 
 Other 'Input' fields like `Input.Number`,  `Input.Time` and `Input.Toggle` will also follow the  similar pattern for 'readWrite' inputStyle property.
 
